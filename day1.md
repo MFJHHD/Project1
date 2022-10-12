@@ -21,3 +21,31 @@ package.json文件:认为是项目‘身份证’,记录项目叫做什么、项
 package-lock.json:缓存性文件
 
 README.md:说明性文件
+
+2:项目的其他配置
+
+2.1项目运行起来的时候，让浏览器自动打开
+--package.json
+   "scripts": {
+    "serve": "vue-cli-service serve --open",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint"
+  },
+
+2.2eslint校验功能关闭
+--在根目录在，创建vue.config.js
+比如:声明变量但是没有使用eslint校验工具报错
+
+2.3src文件夹简写，配置别名。 @
+--jsconfig.json配置别名@提示【@代表src文件夹，这样将来文件过多，找的时候方便】
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "@/*": [
+        "src/*"
+      ]
+    }
+  },
+  "exclude": ["node_modules","dist"]
+}
