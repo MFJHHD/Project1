@@ -69,3 +69,67 @@ vuex核心
       store文件夹下所创建所需的组件文件夹名称
     }
   })
+
+10:完成TypeNav三级联动显示数据业务
+  10.1、组件挂载时在vuex、home模块下发起请求，页面上动态渲染
+  10.2、完成一级分类动态添加背景颜色：
+    1)采用样式完成(.类名:hover{background-color:skyblue})
+    2)通过JS完成(@mouseenter鼠标移入事件, @mouseleave鼠标移出事件),通过鼠标移入移出获取元素下标添加样式类,在移出时通过事件委托实现鼠标在移出下标为0的元素，但是在紧挨它的顶部兄弟元素时，仍然显示高亮
+  10.3、通过JS控制二三级分类的显示与隐藏
+    (:style="{display : currentIndex==index ? 'block':'none'}")
+
+11:卡顿现象
+  正常:(用户慢慢的操作),鼠标进入,每一个一级分类h3,都会触发鼠标进入事件
+  非正常操作:(用户快速的操作),本身全部的一级分类应该都触发鼠标进入事件,但是事实只有部分触发了,是因为用户操作过客,浏览器没反应过来,如果当前回调函数中有大量业务,可能出现卡顿现象
+
+  11.1、节流:在规定的间隔时间范围内不会重复触发,只有大于这个时间间隔才会触发回调,把频繁触发变为少量触发
+  11.2、防抖:前面所有的触发都被取消,最后一次执行在规定时间之后才会触发,也就是说如果连续快速的触发,指挥执行一次
+
+  lodash官网->lodash.js->引入
+  (防抖:_.debounce    节流:_.throttle)
+
+12:完成三级联动节流的操作
+  查看node_modules是否有loadsh,没有(npm i loadsh)。
+  有,为了性能优化在组件中按需引入(import throttle from 'lodash/throttle';),直接使用throttle,例如
+  原文件:
+  changeIndex(index){
+        this.currentIndex = index
+    },
+  改为es5写法: 
+    changeIndex:throttle(function(index){
+        this.currentIndex = index
+    },50),
+
+13:三级联动组建的路由跳转与传递参数
+三级联动用户可以点击的:一级、二级、三级分类,当点击时
+Home模块跳转到Search模块,一级会把用户选中的产品(产品的名字、产品的id)在路由跳转的时候,进行传递
+
+路由跳转:
+声明式导航:router-link
+编程式导航:push|replace
+
+三级联动:
+①:如果使用声明式导航router-link,可以实现路由的跳转与传递参数,但是需要注意,出现卡顿现象。(原因是router-link:是一个组件,当服务器的数据返回之后,循环出很多的router-link组件【创建组件实例】1000+ 创建组件的时候,一瞬间创建1000+很消耗内存,因此出现卡顿现象)
+②:最好的解决方案:编程式导航+事件委托,在a标签上添加自定义属性data-categoryName,通过点击事件自带参数event.target.dataset判断子节点是否带有这个a标签自定义属性(if(data-categoryname){}),在判断中整理路由参数categoryName和category?Id,在一级、二级、三级分类分别添加自定义属性data-category1Id、data-category2Id、data-category3Id。在判断a标签的条件中分别判断这三个自定义属性，获取各自的category?Id参数,将参数进行整合,跳转
+实例:
+ goSearch(event){
+        let element = event.target
+        let {categoryname,category1id,category2id,category3id} = element.dataset
+        //解决问题1:是否为a标签
+        if(categoryname){
+           let location = {name:'search'}
+           let query = {categoryName:categoryname}
+           //解决问题2,一级、二级、三级分类的a标签
+           if(category1id){
+             query.category1Id = category1id
+           }else if(category2id){
+            query.category2Id = category2id
+           }else{
+            query.category3Id = category3id
+           }
+           //整合参数
+           location.query = query
+           //路由跳转
+           this.$router.push(location)
+        }
+    }
