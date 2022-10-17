@@ -3,48 +3,67 @@
     <!-- <h1>{{categoryList}}</h1> -->
     <!-- <h1>{{ currentIndex}}</h1> -->
     <div class="container">
-        <!-- 事件委托 -->
-      <div @mouseleave="leaveIndex">
-         <h2 class="all">全部商品分类</h2>
-         <!-- 三级联动 -->
-       <div class="sort">
-        <!-- 利用事件委托+编程式导航实现路由的跳转与传参 -->
-        <div class="all-sort-list2" @click="goSearch">
-          <div
-            class="item"
-            v-for="(c1, index) in categoryList"
-            :key="c1.categoryId"
-            :class="{cur:currentIndex==index}"
-          >
-            <h3 @mouseenter="changeIndex(index)">
-              <a :data-categoryName="c1.categoryName" :data-category1Id="c1.categoryId">{{ c1.categoryName }}</a>
-            </h3>
-            <!-- 二级三级联动 -->
-            <div class="item-list clearfix" :style="{display : currentIndex==index ? 'block':'none'}">
+      <!-- 事件委托 -->
+      <div @mouseleave="leaveIndex" @mouseenter="enterShow">
+        <h2 class="all">全部商品分类</h2>
+        <!-- 过渡动画 -->
+        <transition name="sort">
+          <!-- 三级联动 -->
+          <div class="sort" v-show="show">
+            <!-- 利用事件委托+编程式导航实现路由的跳转与传参 -->
+            <div class="all-sort-list2" @click="goSearch">
               <div
-                class="subitem"
-                v-for="(c2, index) in c1.categoryChild"
-                :key="c2.categoryId"
-                
+                class="item"
+                v-for="(c1, index) in categoryList"
+                :key="c1.categoryId"
+                :class="{ cur: currentIndex == index }"
               >
-                <dl class="fore">
-                  <dt>
-                    <a :data-categoryName="c2.categoryName" :data-category2Id="c2.categoryId">{{c2.categoryName}}</a>
-                  </dt>
-                  <dd>
-                    <em v-for="(c3,index) in c2.categoryChild" :key="c3.categoryId">
-                      <a :data-categoryName="c3.categoryName" :data-category3Id="c3.categoryId">{{c3.categoryName}}</a>
-                    </em>
-                    
-                  </dd>
-                </dl>
+                <h3 @mouseenter="changeIndex(index)">
+                  <a
+                    :data-categoryName="c1.categoryName"
+                    :data-category1Id="c1.categoryId"
+                    >{{ c1.categoryName }}</a
+                  >
+                </h3>
+                <!-- 二级三级联动 -->
+                <div
+                  class="item-list clearfix"
+                  :style="{ display: currentIndex == index ? 'block' : 'none' }"
+                >
+                  <div
+                    class="subitem"
+                    v-for="(c2, index) in c1.categoryChild"
+                    :key="c2.categoryId"
+                  >
+                    <dl class="fore">
+                      <dt>
+                        <a
+                          :data-categoryName="c2.categoryName"
+                          :data-category2Id="c2.categoryId"
+                          >{{ c2.categoryName }}</a
+                        >
+                      </dt>
+                      <dd>
+                        <em
+                          v-for="(c3, index) in c2.categoryChild"
+                          :key="c3.categoryId"
+                        >
+                          <a
+                            :data-categoryName="c3.categoryName"
+                            :data-category3Id="c3.categoryId"
+                            >{{ c3.categoryName }}</a
+                          >
+                        </em>
+                      </dd>
+                    </dl>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </transition>
       </div>
-      </div>
-     
+
       <nav class="nav">
         <a href="###">服装城</a>
         <a href="###">美妆馆</a>
@@ -54,7 +73,7 @@
         <a href="###">团购</a>
         <a href="###">有趣</a>
         <a href="###">秒杀</a>
-      </nav>  
+      </nav>
     </div>
   </div>
 </template>
@@ -62,84 +81,100 @@
 <script>
 import { mapState } from "vuex";
 //引入方式:全部功能函数引入
-import throttle from 'lodash/throttle';
+import throttle from "lodash/throttle";
 import { CLOSING } from "ws";
 
 export default {
   name: "TypeNav",
-  data(){
-    return{
-        //存储用户鼠标移入的一级分类
-       currentIndex:-1
-    }
+  data() {
+    return {
+      //存储用户鼠标移入的一级分类
+      currentIndex: -1,
+      show: true,
+    };
   },
   //组件挂载完毕,向服务器发送请求
   mounted() {
     //通知Vuex发请求,获取数据,存储于仓库中
-    this.$store.dispatch("categoryList");
+    //this.$store.dispatch("categoryList");为了性能优化放入app根组件中
+    if (this.$route.path != "/home") {
+      this.show = false;
+    }
   },
   computed: {
     ...mapState({
       //右侧需要的是一个函数,当使用这个计算属性的时候,右侧函数会立即执行一次
       //注入一个参数state,其实即为大仓库中的数据
       categoryList: (state) => {
-       // console.log(state);
+        // console.log(state);
         return state.home.categoryList;
       },
     }),
   },
-  methods:{
+  methods: {
     //鼠标进入修改响应式数据currentIndex属性
     //es6写法
     //changeIndex(index){
-        //index:鼠标移上某一个一级分类的元素的索引值
-        //正常情况(用户慢慢的操作),鼠标进入,每一个一级分类h3,都会触发鼠标进入事件
-        //非正常操作(用户快速的操作),本身全部的一级分类应该都触发鼠标进入事件,但是事实只有部分触发了,是因为用户操作过客,浏览器没反应过来,如果当前回调函数中有大量业务,可能出现卡顿现象
-     //   this.currentIndex = index
+    //index:鼠标移上某一个一级分类的元素的索引值
+    //正常情况(用户慢慢的操作),鼠标进入,每一个一级分类h3,都会触发鼠标进入事件
+    //非正常操作(用户快速的操作),本身全部的一级分类应该都触发鼠标进入事件,但是事实只有部分触发了,是因为用户操作过客,浏览器没反应过来,如果当前回调函数中有大量业务,可能出现卡顿现象
+    //   this.currentIndex = index
     //},
-    
+
     //节流
-    //es5写法， 
-    changeIndex:throttle(function(index){
-        this.currentIndex = index
-    },50),
+    //es5写法，
+    changeIndex: throttle(function (index) {
+      this.currentIndex = index;
+    }, 50),
     //一级分类鼠标移出
-    leaveIndex(){
-        this.currentIndex = -1
+    leaveIndex() {
+      (this.currentIndex = -1),
+        //判断只有不在home页面才会进行判断并赋值
+        (this.show = this.$route.path == "/home" ? true : false);
     },
 
-    goSearch(event){
-        //最好的解决方案:编程式导航+事件委托
-        //存在的问题:事件委托是把全部的子节点【div、h3、dt、em】的事件委托给父节点
-        //问题:1)点击a标签的时候,才会进行路由跳转【如何确定点击的是a标签】
-        //问题:2)即使确定点击的是a标签,如何区分一级、二级、三级
+    goSearch(event) {
+      //最好的解决方案:编程式导航+事件委托
+      //存在的问题:事件委托是把全部的子节点【div、h3、dt、em】的事件委托给父节点
+      //问题:1)点击a标签的时候,才会进行路由跳转【如何确定点击的是a标签】
+      //问题:2)即使确定点击的是a标签,如何区分一级、二级、三级
 
-        //解决问题1:在a标签上添加自定义属性data-categoryName,其余节点没有
-        //console.log(event.target)
-        let element = event.target
-        //获取到当前事件的节点,需要带有data-categoryname(浏览器自动把驼峰转小写)
-        //节点有个属性dataset:可以获取到节点的自定义属性
-        let {categoryname,category1id,category2id,category3id} = element.dataset
-        if(categoryname){
-           // alert('a')
-           //整理路由跳转的参数
-           let location = {name:'search'}
-           let query = {categoryName:categoryname}
-           //解决问题2,一级、二级、三级分类的a标签
-           if(category1id){
-             query.category1Id = category1id
-           }else if(category2id){
-            query.category2Id = category2id
-           }else{
-            query.category3Id = category3id
-           }
-           //整合参数
-           location.query = query
-           //路由跳转
-           this.$router.push(location)
+      //解决问题1:在a标签上添加自定义属性data-categoryName,其余节点没有
+      //console.log(event.target)
+      let element = event.target;
+      //获取到当前事件的节点,需要带有data-categoryname(浏览器自动把驼峰转小写)
+      //节点有个属性dataset:可以获取到节点的自定义属性
+      let { categoryname, category1id, category2id, category3id } =
+        element.dataset;
+      if (categoryname) {
+        // alert('a')
+        //整理路由跳转的参数
+        let location = { name: "search" };
+        let query = { categoryName: categoryname };
+        //解决问题2,一级、二级、三级分类的a标签
+        if (category1id) {
+          query.category1Id = category1id;
+        } else if (category2id) {
+          query.category2Id = category2id;
+        } else {
+          query.category3Id = category3id;
         }
-    }
-  }
+        //判断:如果路由跳转的时候,带有params参数,捎带传递过去
+        if(this.$route.params){
+          location.params = this.$route.params
+          //动态给location配置对象添加query属性
+          location.query = query;
+          //路由跳转
+          this.$router.push(location);
+        }
+       
+      }
+    },
+    //鼠标移入
+    enterShow() {
+      this.show = true;
+    },
+  },
 };
 </script>
 
@@ -252,14 +287,35 @@ export default {
               }
             }
           }
-
-         
         }
-       .cur{
-        background-color:skyblue;
-       }
+        .cur {
+          background-color: skyblue;
+        }
       }
     }
+    // 过渡动画效果样式
+    //过渡动画开始状态(进入)
+    .sort-enter{
+      height: 0px;
+    }
+    //过渡动画结束状态(移出)
+    .sort-enter-to{
+      height: 461px;
+     //旋转动画 transform:rotate(360deg);
+    }
+    //定义动画时间、速率
+    .sort-enter-active{
+      transition: all .5s linear;
+    }
+    // .sort-leave{
+    //   height: 461px;
+    // }
+    // .sort-leave-to{
+    //   height: 0px;
+    // }
+    // .sort-leave-active{
+    //   transition: all .5s linear;
+    // }
   }
 }
 </style>

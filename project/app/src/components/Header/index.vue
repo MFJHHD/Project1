@@ -57,7 +57,14 @@ methods:{
         //第二种:模板字符串
         // this.$router.push(`/search/${this.keyword}?k=${this.keyword.toUpperCase()}`)
         //第三种:对象【常用】
-        this.$router.push({name:'search',params:{keyword:this.keyword},query:{k:this.keyword.toUpperCase()}},()=>{},()=>{});
+        // this.$router.push({name:'search',params:{keyword:this.keyword||undefined},
+        //query:{k:this.keyword.toUpperCase()}
+        // },()=>{},()=>{});
+        if(this.$route.query){
+            let loction = {name:'search',params:{keyword:this.keyword||undefined}}
+            loction.query = this.$route.query
+            this.$router.push(loction)
+        }
         console.log(this)
     }
 }
