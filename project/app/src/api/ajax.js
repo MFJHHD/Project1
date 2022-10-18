@@ -35,6 +35,5 @@ requests.interceptors.response.use((res)=>{
     return Promise.reject(new Error('faile')) //终止promise链
 })
 
-
-//对外暴露
+//对外暴露(axios实例)
 export default requests;

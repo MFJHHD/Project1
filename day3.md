@@ -30,3 +30,17 @@ TypeNav组件:
           路由跳转
           this.$router.push(location);
         }
+
+4)开发Home首页当中的ListContainer组件与Floor组件?
+http://docschina.org/   (前端常用库)   (ctrl+g搜索框)
+服务器返回的数据(接口)只有商品分类菜单分类数据,对于ListContainer组件数据服务器没有提供的
+mock数据(模拟):需要用到插件mockjs
+mock使用步骤:
+    1)在项目当中src文件夹中创建mock文件夹
+    2)准备JSON数据(mock文件夹中创建相应的JSON文件)---格式化下,别留有空格(跑不起来)
+    3)把mock数据需要的图片放置到public文件夹中【public文件夹在打包的时候,会把相应资源原封不动打包到dist文件夹中】
+    4)创建mockServe.js通过mockjs插件实现模拟数据
+    5)mockServe.js文件在入口文件中引入(至少需要执行一次,才能模拟数据)
+
+5)ListContainer组件开发重点
+安装swiper插件: npm install --save swiper@5
