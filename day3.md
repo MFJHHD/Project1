@@ -44,3 +44,47 @@ mock使用步骤:
 
 5)ListContainer组件开发重点
 安装swiper插件: npm install --save swiper@5
+引入import "swiper/css/swiper.css"; import Swiper from "swiper";
+使用swiper类
+
+watch+$nextTick:数据监听:监听已有数据;
+nextTick():在下次DOM更新 循环结束之后执行延迟回调   在修改数据之后立即使用这个方法,获取更新后的DOM【可以保证页面中的结构一定是有的,而且经常和很多插件一起使用(都需要DOM存在了)】
+
+代码：
+watch:{
+    bannerList:{
+        handler(newValue,oldValue){
+           this.$nextTick(()=>{
+              var mySwiper = new Swiper(document.querySelector(".swiper-container"), {
+                 loop: true, // 循环模式选项
+                 pagination: {
+                 el: ".swiper-pagination", //换页器与哪个标签关联
+                 clickable: true, //分页器是否可以点击
+                  },
+                 navigation: {
+                 nextEl: ".swiper-button-next",
+                 prevEl: ".swiper-button-prev",
+                  },
+                //autoplay:true  自动播放
+               });
+           })
+        }
+    }
+}
+
+6)开发floor组件
+6.1:getFloorList这个actions在哪里触发,是需要在Home路由组件当中发的,不能在Floor组件内部发actions,因为我们需要v-for遍历floor组件
+6.2:v-for也可以在自定义标签当中使用
+6.3:父子组件通信的方式
+props:父组件通过v-bind绑定自定义属性赋值,子组件通过props接收
+自定义事件:@on @emit 可以实现子向父传参
+全局事件总线:$bus 全能
+pubsub-js:vue当中几乎不用  全能
+插槽
+vuex
+
+7)把首页当中的轮播图拆分为一个共用全局组件(相同结构与使用)
+切记:开发项目的时候,如果看到一个组件在很多地方都使用,把它变成全局组件,
+注册一次,可以在任意地方使用,共用的组件|非路由组件放到components文件夹中
+
+8)Search静态页面搭建

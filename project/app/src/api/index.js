@@ -12,3 +12,5 @@ export const reqCategoryList = ()=>requests.get("/product/getBaseCategoryList");
 
 //获取banner(home模块轮播图接口)
 export const reqGetBannerList = ()=>mockRequests.get("/banner")
+//获取floor数据
+export const reqFloorList = ()=>mockRequests.get('/floor')

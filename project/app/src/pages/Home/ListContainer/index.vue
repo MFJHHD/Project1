@@ -3,23 +3,7 @@
     <div class="sortList clearfix">
       <div class="center">
         <!--banner轮播-->
-        <div class="swiper-container" id="mySwiper">
-          <div class="swiper-wrapper">
-            <div
-              class="swiper-slide"
-              v-for="(carousel, index) in bannerList"
-              :key="carousel.id"
-            >
-              <img :src="carousel.imgUrl" />
-            </div>
-          </div>
-          <!-- 如果需要分页器 -->
-          <div class="swiper-pagination"></div>
-
-          <!-- 如果需要导航按钮 -->
-          <div class="swiper-button-prev"></div>
-          <div class="swiper-button-next"></div>
-        </div>
+       <Carousel :list="bannerList"/>
       </div>
       <div class="right">
         <div class="news">
@@ -96,34 +80,47 @@
 
 <script>
 import { mapState } from "vuex";
-//引包
-import Swiper from "swiper";
 
 export default {
   name: "ListContainer",
   mounted() {
+    //mounted:组件挂载完毕,正常说组件结构(DOM)已经全有了
     //派发action，通过Vuex发起ajax请求,将数据存储在仓库当中
     console.log("组件的mounted");
     this.$store.dispatch("getBannerList");
-    //在new Swiper实例之前 页面结构中必须有
-    setTimeout(() => {
-      var mySwiper = new Swiper(document.querySelector(".swiper-container"), {
-        loop: true, // 循环模式选项
-        pagination: {
-          el: ".swiper-pagination", //换页器与哪个标签关联
-          clickable: true, //分页器是否可以点击
-        },
-        navigation: {
-          nextEl: ".swiper-button-next",
-          prevEl: ".swiper-button-prev",
-        },
-        //autoplay:true  自动播放
-      });
-    }, 2000);
+    //为什么swiper实例在mounted当中直接书写不可以,因为结构还没有完善
   },
   computed: {
     ...mapState({ bannerList: (state) => state.home.bannerList }),
   },
+  // watch: {
+  //   //监听bannerList数据的变化,因为这条数据发生过变化---有空数组变为数组里面的四个元素
+  //   bannerList: {
+  //     immediate:true,
+  //     handler(newValue, oldValue) {
+  //       //通过watch监听bannerList属性的属性值发生变化
+  //       //如果执行handler方法,代表组件实例身上这个属性的属性已经有了
+  //       //当前这个函数执行,只能保证bannerList数据已经有了,但是没办法保证v-for已经执行结束
+  //       //v-for执行结束,才有结构
+  //       //nextTick():在下次DOM更新 循环结束之后执行延迟回调   在修改数据之后立即使用这个方法,获取更新后的DOM
+  //       this.$nextTick(() => {
+  //         //当你执行这个回调的时候:保证服务器数据回来了,v-for执行完毕了【轮播图的结构一定有了】
+  //         var mySwiper = new Swiper(this.$refs.mySwiper, {
+  //           loop: true, // 循环模式选项
+  //           pagination: {
+  //             el: ".swiper-pagination", //换页器与哪个标签关联
+  //             clickable: true, //分页器是否可以点击
+  //           },
+  //           navigation: {
+  //             nextEl: ".swiper-button-next",
+  //             prevEl: ".swiper-button-prev",
+  //           },
+  //           //autoplay:true  自动播放
+  //         });
+  //       });
+  //     },
+  //   },
+  // },
 };
 </script>
 
