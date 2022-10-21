@@ -8,6 +8,7 @@ module.exports = defineConfig({
     proxy: {
       '/api': {
         target: ' http://gmall-h5-api.atguigu.cn',
+        //target: ' http://atguigu.cn',
         //pathRewrite: { '^/api': '' },
       },
     },

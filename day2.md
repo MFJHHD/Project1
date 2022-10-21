@@ -21,8 +21,20 @@ XMLHttpRequest、fetch、JQ、axios
 (npm install --save axios@0.24)
 
 5.2、在项目当中经常API文件夹【axios】
+基础地址前缀：http://gmall-h5-api.atguigu.cn
+vue.config.js: 
+  代理跨域
+  devServer: {
+    proxy: {
+      '/api': {
+        //target: ' http://gmall-h5-api.atguigu.cn',
+        target: ' http://atguigu.cn',
+        //pathRewrite: { '^/api': '' },
+      },
+    },
+  },
 接口当中:路径都带有/api
-baseURL:"http://gmall-h5-api.atguigu.cn"
+baseURL:"/api"
 
 5.3、axios可以参考git|NPM关于axios文档
 
